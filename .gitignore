@@ -1,0 +1,7 @@
+# Ignore dependency directories everywhere
+node_modules/
+
+# Ignore mistaken directory name
+mode_module/
+
+
