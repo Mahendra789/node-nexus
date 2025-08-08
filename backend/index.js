@@ -3,11 +3,10 @@ const express = require("express");
 const bodyParser = require("body-parser");
 
 const authRoutes = require("./routes/auth");
+const productRoutes = require("./routes/product");
 
 const app = express();
 const connectDB = require("./config/db");
-
-const userController = require("./controllers/auth");
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
@@ -26,6 +25,7 @@ app.use((req, res, next) => {
 // Support both legacy and new signup endpoints
 
 app.use("/auth", authRoutes);
+app.use("/product", productRoutes);
 
 const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => {
