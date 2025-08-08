@@ -199,24 +199,6 @@ const Profile = () => {
                         <FormGroup>
                           <label
                             className="form-control-label"
-                            htmlFor="input-username"
-                          >
-                            Username
-                          </label>
-                          <Input
-                            className="form-control-alternative"
-                            value={user.username}
-                            onChange={handleChange("username")}
-                            id="input-username"
-                            placeholder="Username"
-                            type="text"
-                          />
-                        </FormGroup>
-                      </Col>
-                      <Col lg="6">
-                        <FormGroup>
-                          <label
-                            className="form-control-label"
                             htmlFor="input-email"
                           >
                             Email address
@@ -228,6 +210,24 @@ const Profile = () => {
                             id="input-email"
                             placeholder="jesse@example.com"
                             type="email"
+                          />
+                        </FormGroup>
+                      </Col>
+                      <Col lg="6">
+                        <FormGroup>
+                          <label
+                            className="form-control-label"
+                            htmlFor="input-country"
+                          >
+                            Mobile
+                          </label>
+                          <Input
+                            className="form-control-alternative"
+                            id="input-mobile-code"
+                            placeholder="Mobile"
+                            value={user.phone}
+                            onChange={handleChange("phone")}
+                            type="number"
                           />
                         </FormGroup>
                       </Col>
@@ -298,7 +298,7 @@ const Profile = () => {
                       </Col>
                     </Row>
                     <Row>
-                      <Col lg="4">
+                      <Col lg="6">
                         <FormGroup>
                           <label
                             className="form-control-label"
@@ -316,7 +316,7 @@ const Profile = () => {
                           />
                         </FormGroup>
                       </Col>
-                      <Col lg="4">
+                      <Col lg="6">
                         <FormGroup>
                           <label
                             className="form-control-label"
@@ -331,24 +331,6 @@ const Profile = () => {
                             id="input-country"
                             placeholder="Country"
                             type="text"
-                          />
-                        </FormGroup>
-                      </Col>
-                      <Col lg="4">
-                        <FormGroup>
-                          <label
-                            className="form-control-label"
-                            htmlFor="input-country"
-                          >
-                            Mobile
-                          </label>
-                          <Input
-                            className="form-control-alternative"
-                            id="input-mobile-code"
-                            placeholder="Mobile"
-                            value={user.phone}
-                            onChange={handleChange("phone")}
-                            type="number"
                           />
                         </FormGroup>
                       </Col>

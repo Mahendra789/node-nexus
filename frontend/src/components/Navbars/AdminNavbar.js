@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 // reactstrap components
 import {
   DropdownMenu,
@@ -13,6 +13,7 @@ import {
 } from "reactstrap";
 
 const AdminNavbar = (props) => {
+  const navigate = useNavigate();
   const [firstName, setFirstName] = useState(() => {
     try {
       const stored = localStorage.getItem("user");
@@ -22,6 +23,16 @@ const AdminNavbar = (props) => {
       return "";
     }
   });
+
+  const handleLogout = (e) => {
+    e.preventDefault();
+    try {
+      window.localStorage.clear();
+    } catch (_) {
+      // ignore
+    }
+    navigate("/auth/login", { replace: true });
+  };
 
   useEffect(() => {
     const updateFromStorage = () => {
@@ -77,7 +88,7 @@ const AdminNavbar = (props) => {
                   <span>My profile</span>
                 </DropdownItem>
                 <DropdownItem divider />
-                <DropdownItem href="#pablo" onClick={(e) => e.preventDefault()}>
+                <DropdownItem href="#logout" onClick={handleLogout}>
                   <i className="ni ni-user-run" />
                   <span>Logout</span>
                 </DropdownItem>

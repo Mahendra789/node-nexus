@@ -1,6 +1,9 @@
 require("dotenv").config();
 const express = require("express");
 const bodyParser = require("body-parser");
+
+const authRoutes = require("./routes/auth");
+
 const app = express();
 const connectDB = require("./config/db");
 
@@ -21,10 +24,8 @@ app.use((req, res, next) => {
   next();
 });
 // Support both legacy and new signup endpoints
-app.post("/signup", userController.signup);
-app.post("/login", userController.login);
-app.get("/user", userController.getUser);
-app.put("/user/:userId", userController.updateUser);
+
+app.use("/auth", authRoutes);
 
 const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => {
