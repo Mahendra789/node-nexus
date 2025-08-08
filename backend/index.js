@@ -1,9 +1,14 @@
 const express = require("express");
 const bodyParser = require("body-parser");
 const app = express();
+const connectDB = require("./config/db");
 
-// app.use(bodyParser.urlencoded()); // x-www-form-urlencoded <form>
-app.use(bodyParser.json()); // application/json
+const userController = require("./controllers/user");
+
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.json());
+
+connectDB();
 
 app.use((req, res, next) => {
   res.setHeader("Access-Control-Allow-Origin", "*");
@@ -14,5 +19,11 @@ app.use((req, res, next) => {
   res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
   next();
 });
+app.post("/user", userController.addUser);
+app.get("/user", userController.getUser);
+app.put("/user/:userId", userController.updateUser);
 
-app.listen(8080);
+const PORT = process.env.PORT || 8080;
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});
