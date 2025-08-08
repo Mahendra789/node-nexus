@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 // reactstrap components
 import {
@@ -6,12 +6,6 @@ import {
   DropdownItem,
   UncontrolledDropdown,
   DropdownToggle,
-  Form,
-  FormGroup,
-  InputGroupAddon,
-  InputGroupText,
-  Input,
-  InputGroup,
   Navbar,
   Nav,
   Container,
@@ -19,6 +13,34 @@ import {
 } from "reactstrap";
 
 const AdminNavbar = (props) => {
+  const [firstName, setFirstName] = useState(() => {
+    try {
+      const stored = localStorage.getItem("user");
+      const parsed = stored ? JSON.parse(stored) : null;
+      return parsed?.firstName || "";
+    } catch (e) {
+      return "";
+    }
+  });
+
+  useEffect(() => {
+    const updateFromStorage = () => {
+      try {
+        const stored = localStorage.getItem("user");
+        const parsed = stored ? JSON.parse(stored) : null;
+        setFirstName(parsed?.firstName || "");
+      } catch (e) {
+        // ignore
+      }
+    };
+
+    window.addEventListener("user-updated", updateFromStorage);
+    window.addEventListener("storage", updateFromStorage);
+    return () => {
+      window.removeEventListener("user-updated", updateFromStorage);
+      window.removeEventListener("storage", updateFromStorage);
+    };
+  }, []);
   return (
     <>
       <Navbar className="navbar-top navbar-dark" expand="md" id="navbar-main">
@@ -29,18 +51,6 @@ const AdminNavbar = (props) => {
           >
             {props.brandText}
           </Link>
-          <Form className="navbar-search navbar-search-dark form-inline mr-3 d-none d-md-flex ml-lg-auto">
-            <FormGroup className="mb-0">
-              <InputGroup className="input-group-alternative">
-                <InputGroupAddon addonType="prepend">
-                  <InputGroupText>
-                    <i className="fas fa-search" />
-                  </InputGroupText>
-                </InputGroupAddon>
-                <Input placeholder="Search" type="text" />
-              </InputGroup>
-            </FormGroup>
-          </Form>
           <Nav className="align-items-center d-none d-md-flex" navbar>
             <UncontrolledDropdown nav>
               <DropdownToggle className="pr-0" nav>
@@ -53,7 +63,7 @@ const AdminNavbar = (props) => {
                   </span>
                   <Media className="ml-2 d-none d-lg-block">
                     <span className="mb-0 text-sm font-weight-bold">
-                      Jessica Jones
+                      {firstName}
                     </span>
                   </Media>
                 </Media>

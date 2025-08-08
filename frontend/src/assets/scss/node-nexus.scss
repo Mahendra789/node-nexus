@@ -62,3 +62,20 @@
 
 // React Differences
 @import "react/react-differences";
+
+// Overrides: improve contrast for input text vs placeholder
+.form-control,
+input.form-control,
+textarea.form-control,
+select.form-control,
+.form-control-alternative {
+  color: #2d3748 !important; // dark gray for better readability
+}
+
+.form-control::placeholder,
+input.form-control::placeholder,
+textarea.form-control::placeholder,
+.form-control-alternative::placeholder {
+  color: rgba(0, 0, 0, 0.45) !important; // lighter than text
+  opacity: 1; // ensure placeholder is visible in Firefox
+}
