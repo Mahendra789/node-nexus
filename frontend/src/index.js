@@ -8,6 +8,7 @@ import "assets/scss/node-nexus.scss";
 
 import AdminLayout from "layouts/Admin.js";
 import AuthLayout from "layouts/Auth.js";
+import ErrorLayout from "layouts/Error.js";
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 
@@ -16,7 +17,8 @@ root.render(
     <Routes>
       <Route path="/admin/*" element={<AdminLayout />} />
       <Route path="/auth/*" element={<AuthLayout />} />
-      <Route path="*" element={<Navigate to="/admin/dashboard" replace />} />
+      <Route path="/error/*" element={<ErrorLayout />} />
+      <Route path="*" element={<Navigate to="/error/not-found" replace />} />
     </Routes>
   </BrowserRouter>
 );

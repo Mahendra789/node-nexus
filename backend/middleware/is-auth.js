@@ -1,4 +1,5 @@
 const jwt = require("jsonwebtoken");
+const JWT_SECRET_KEY = process.env.JWT_SECRET_KEY;
 
 module.exports = (req, res, next) => {
   const authHeader = req.get("Authorization");
@@ -10,9 +11,10 @@ module.exports = (req, res, next) => {
   const token = authHeader.split(" ")[1];
   let decodedToken;
   try {
-    decodedToken = jwt.verify(token, "somesupersecretsecret");
+    decodedToken = jwt.verify(token, JWT_SECRET_KEY);
   } catch (err) {
-    err.statusCode = 500;
+    // Invalid/expired token -> 401
+    err.statusCode = 401;
     throw err;
   }
   if (!decodedToken) {

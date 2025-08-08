@@ -10,7 +10,13 @@ const getAuthToken = () => {
 
 const apiRequest = async (
   path,
-  { method = "GET", body, includeAuth = true, headers = {} } = {}
+  {
+    method = "GET",
+    body,
+    includeAuth = true,
+    headers = {},
+    autoRedirectOnError = true,
+  } = {}
 ) => {
   if (!API_BASE_URL) {
     throw new Error("API base URL is not configured.");
@@ -38,6 +44,19 @@ const apiRequest = async (
   });
 
   if (!response.ok) {
+    // Redirect by status code
+    if (autoRedirectOnError) {
+      if (response.status === 401 || response.status === 403) {
+        try {
+          window.location.replace("/error/not-allowed");
+        } catch (_) {}
+      } else if (response.status === 404) {
+        try {
+          window.location.replace("/error/not-found");
+        } catch (_) {}
+      }
+    }
+
     let message = `Request failed with status ${response.status}`;
     try {
       const data = await response.json();
@@ -66,6 +85,7 @@ export const login = (payload) =>
     method: "POST",
     body: payload,
     includeAuth: false,
+    autoRedirectOnError: false,
   });
 
 export const createUser = (payload) =>
