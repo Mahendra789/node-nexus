@@ -6,7 +6,7 @@ import Tables from "views/examples/Tables.js";
 
 var routes = [
   {
-    path: "/index",
+    path: "/dashboard",
     name: "Dashboard",
     icon: "ni ni-tv-2 text-primary",
     component: <Index />,

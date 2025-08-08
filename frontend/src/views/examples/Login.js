@@ -1,3 +1,6 @@
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { login as loginApi } from "../../api/user";
 // reactstrap components
 import {
   Button,
@@ -12,59 +15,79 @@ import {
   InputGroup,
   Row,
   Col,
+  Alert,
 } from "reactstrap";
 
 const Login = () => {
+  const navigate = useNavigate();
+  const [form, setForm] = useState({
+    email: "",
+    password: "",
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [alertState, setAlertState] = useState({
+    visible: false,
+    color: "",
+    message: "",
+  });
+
+  const setAlert = (message, color) => {
+    setAlertState({ visible: true, color, message });
+    setTimeout(
+      () => setAlertState((prev) => ({ ...prev, visible: false })),
+      3000
+    );
+  };
+
+  const handleChange = (field) => (e) => {
+    const value = e.target.value;
+    setForm((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!form.email || !form.password) {
+      setAlert("Please enter both email and password.", "danger");
+      return;
+    }
+    try {
+      setIsSubmitting(true);
+      const data = await loginApi({
+        email: form.email,
+        password: form.password,
+      });
+      if (data?.token) window.localStorage.setItem("authToken", data.token);
+      if (data?.userId) window.localStorage.setItem("userId", data.userId);
+      navigate("/admin/dashboard", { replace: true });
+    } catch (err) {
+      console.error("Login failed:", err);
+      setAlert(err?.message || "Login failed. Please try again.", "danger");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
     <>
       <Col lg="5" md="7">
         <Card className="bg-secondary shadow border-0">
-          <CardHeader className="bg-transparent pb-5">
-            <div className="text-muted text-center mt-2 mb-3">
-              <small>Sign in with</small>
-            </div>
-            <div className="btn-wrapper text-center">
-              <Button
-                className="btn-neutral btn-icon"
-                color="default"
-                href="#pablo"
-                onClick={(e) => e.preventDefault()}
-              >
-                <span className="btn-inner--icon">
-                  <img
-                    alt="..."
-                    src={
-                      require("../../assets/img/icons/common/github.svg")
-                        .default
-                    }
-                  />
-                </span>
-                <span className="btn-inner--text">Github</span>
-              </Button>
-              <Button
-                className="btn-neutral btn-icon"
-                color="default"
-                href="#pablo"
-                onClick={(e) => e.preventDefault()}
-              >
-                <span className="btn-inner--icon">
-                  <img
-                    alt="..."
-                    src={
-                      require("../../assets/img/icons/common/google.svg")
-                        .default
-                    }
-                  />
-                </span>
-                <span className="btn-inner--text">Google</span>
-              </Button>
-            </div>
-          </CardHeader>
           <CardBody className="px-lg-5 py-lg-5">
             <div className="text-center text-muted mb-4">
-              <small>Or sign in with credentials</small>
+              <small>Sign In</small>
             </div>
-            <Form role="form">
+            {alertState.visible && (
+              <div className="mb-3">
+                <Alert
+                  color={alertState.color}
+                  toggle={() =>
+                    setAlertState((prev) => ({ ...prev, visible: false }))
+                  }
+                >
+                  {alertState.message}
+                </Alert>
+              </div>
+            )}
+            <Form role="form" onSubmit={handleSubmit}>
               <FormGroup className="mb-3">
                 <InputGroup className="input-group-alternative">
                   <InputGroupAddon addonType="prepend">
@@ -75,7 +98,9 @@ const Login = () => {
                   <Input
                     placeholder="Email"
                     type="email"
-                    autoComplete="new-email"
+                    autoComplete="email"
+                    value={form.email}
+                    onChange={handleChange("email")}
                   />
                 </InputGroup>
               </FormGroup>
@@ -89,26 +114,21 @@ const Login = () => {
                   <Input
                     placeholder="Password"
                     type="password"
-                    autoComplete="new-password"
+                    autoComplete="current-password"
+                    value={form.password}
+                    onChange={handleChange("password")}
                   />
                 </InputGroup>
               </FormGroup>
-              <div className="custom-control custom-control-alternative custom-checkbox">
-                <input
-                  className="custom-control-input"
-                  id=" customCheckLogin"
-                  type="checkbox"
-                />
-                <label
-                  className="custom-control-label"
-                  htmlFor=" customCheckLogin"
-                >
-                  <span className="text-muted">Remember me</span>
-                </label>
-              </div>
+              {/* Remember me removed */}
               <div className="text-center">
-                <Button className="my-4" color="primary" type="button">
-                  Sign in
+                <Button
+                  className="my-4"
+                  color="primary"
+                  type="submit"
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? "Signing in..." : "Sign in"}
                 </Button>
               </div>
             </Form>

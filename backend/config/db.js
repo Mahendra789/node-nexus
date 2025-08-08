@@ -1,9 +1,12 @@
 const mongoose = require("mongoose");
+
 const connectDB = async () => {
   try {
-    await mongoose.connect(
-      "mongodb+srv://mahendraahada:kgBLJmmTWTO1HYgH@node-nexus.uubnrj0.mongodb.net/node-nexus"
-    );
+    let mongoUri = process.env.MONGODB_URI;
+    if (!mongoUri) {
+      throw new Error("MONGODB_URI environment variable is not set");
+    }
+    await mongoose.connect(mongoUri);
     console.log("MongoDB connected");
   } catch (error) {
     console.log(error);

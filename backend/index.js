@@ -1,9 +1,10 @@
+require("dotenv").config();
 const express = require("express");
 const bodyParser = require("body-parser");
 const app = express();
 const connectDB = require("./config/db");
 
-const userController = require("./controllers/user");
+const userController = require("./controllers/auth");
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
@@ -19,7 +20,9 @@ app.use((req, res, next) => {
   res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
   next();
 });
-app.post("/user", userController.addUser);
+// Support both legacy and new signup endpoints
+app.post("/signup", userController.signup);
+app.post("/login", userController.login);
 app.get("/user", userController.getUser);
 app.put("/user/:userId", userController.updateUser);
 

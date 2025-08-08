@@ -49,7 +49,7 @@ const Admin = (props) => {
         {...props}
         routes={routes}
         logo={{
-          innerLink: "/admin/index",
+          innerLink: "/admin/dashboard",
           imgSrc: require("../assets/img/brand/node-nexus-react.png"),
           imgAlt: "...",
         }}
@@ -61,7 +61,10 @@ const Admin = (props) => {
         />
         <Routes>
           {getRoutes(routes)}
-          <Route path="*" element={<Navigate to="/admin/index" replace />} />
+          <Route
+            path="*"
+            element={<Navigate to="/admin/dashboard" replace />}
+          />
         </Routes>
         <Container fluid>
           <AdminFooter />

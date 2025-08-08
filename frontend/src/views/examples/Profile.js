@@ -15,9 +15,9 @@ import {
 } from "reactstrap";
 // core components
 import UserHeader from "components/Headers/UserHeader.js";
+import { getFirstUser, updateUser as apiUpdateUser } from "../../api/user";
 
 const Profile = () => {
-  const BASE_URL = process.env.REACT_APP_API_BASE_URL;
   const [user, setUser] = useState({
     username: "",
     email: "",
@@ -38,54 +38,41 @@ const Profile = () => {
     message: "",
   });
 
-  const fetchUser = useCallback(
-    async (isMounted) => {
-      try {
-        const response = await fetch(`${BASE_URL}/user`);
-        const data = await response.json();
-        const fetchedUser = Array.isArray(data) ? data[0] : data;
-        if (isMounted && fetchedUser) {
-          setUserId(fetchedUser._id ?? null);
-          const normalized = {
-            username: fetchedUser.username ?? "",
-            email: fetchedUser.email ?? "",
-            firstName: fetchedUser.firstName ?? "",
-            lastName: fetchedUser.lastName ?? "",
-            address: fetchedUser.address ?? "",
-            city: fetchedUser.city ?? "",
-            country: fetchedUser.country ?? "",
-            phone: fetchedUser.phone != null ? String(fetchedUser.phone) : "",
-            about: fetchedUser.about ?? "",
-          };
-          setUser(normalized);
-          setInitialUser(normalized);
-          try {
-            localStorage.setItem(
-              "user",
-              JSON.stringify({ ...fetchedUser, ...normalized })
-            );
-            window.dispatchEvent(new Event("user-updated"));
-          } catch (e) {
-            // ignore storage errors
-          }
+  const fetchUser = useCallback(async (isMounted) => {
+    try {
+      const fetchedUser = await getFirstUser();
+      if (isMounted && fetchedUser) {
+        setUserId(fetchedUser._id ?? null);
+        const normalized = {
+          username: fetchedUser.username ?? "",
+          email: fetchedUser.email ?? "",
+          firstName: fetchedUser.firstName ?? "",
+          lastName: fetchedUser.lastName ?? "",
+          address: fetchedUser.address ?? "",
+          city: fetchedUser.city ?? "",
+          country: fetchedUser.country ?? "",
+          phone: fetchedUser.phone != null ? String(fetchedUser.phone) : "",
+          about: fetchedUser.about ?? "",
+        };
+        setUser(normalized);
+        setInitialUser(normalized);
+        try {
+          localStorage.setItem(
+            "user",
+            JSON.stringify({ ...fetchedUser, ...normalized })
+          );
+          window.dispatchEvent(new Event("user-updated"));
+        } catch (e) {
+          // ignore storage errors
         }
-      } catch (error) {
-        console.error("Failed to fetch user:", error);
       }
-    },
-    [BASE_URL]
-  );
+    } catch (error) {
+      console.error("Failed to fetch user:", error);
+    }
+  }, []);
 
   const updateUser = async (payload) => {
-    const response = await fetch(`${BASE_URL}/user/${userId}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
-    if (!response.ok) {
-      throw new Error(`Request failed with status ${response.status}`);
-    }
-    const result = await response.json();
+    const result = await apiUpdateUser(userId, payload);
     const updatedUser = result?.user ?? null;
     if (updatedUser) {
       const normalized = {
