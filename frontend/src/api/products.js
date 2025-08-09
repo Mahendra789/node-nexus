@@ -23,14 +23,14 @@ export const getSuppliersAndCategories = () =>
 
 export const getAllSuppliers = ({ page = 1, limit = 10 } = {}) =>
   apiRequest(
-    `/product/suppliers?page=${encodeURIComponent(page)}&limit=${encodeURIComponent(
-      limit
-    )}`
+    `/product/suppliers?page=${encodeURIComponent(
+      page
+    )}&limit=${encodeURIComponent(limit)}`
   );
 
 export const getAllCategories = ({ page = 1, limit = 10 } = {}) =>
   apiRequest(
-    `/product/categories?page=${encodeURIComponent(page)}&limit=${encodeURIComponent(
-      limit
-    )}`
+    `/product/categories?page=${encodeURIComponent(
+      page
+    )}&limit=${encodeURIComponent(limit)}`
   );

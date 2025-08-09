@@ -1,7 +1,17 @@
 import { useEffect, useState } from "react";
 import Header from "components/Headers/Header.js";
 import { getAllSuppliers } from "api/products";
-import { Card, CardHeader, CardFooter, Container, Row, Table, Pagination, PaginationItem, PaginationLink } from "reactstrap";
+import {
+  Card,
+  CardHeader,
+  CardFooter,
+  Container,
+  Row,
+  Table,
+  Pagination,
+  PaginationItem,
+  PaginationLink,
+} from "reactstrap";
 
 const Suppliers = () => {
   const [suppliers, setSuppliers] = useState([]);
@@ -90,7 +100,10 @@ const Suppliers = () => {
               </Table>
               <CardFooter className="py-4">
                 <nav aria-label="Supplier pagination">
-                  <Pagination className="pagination justify-content-end mb-0" listClassName="justify-content-end mb-0">
+                  <Pagination
+                    className="pagination justify-content-end mb-0"
+                    listClassName="justify-content-end mb-0"
+                  >
                     <PaginationItem disabled={page === 1}>
                       <PaginationLink
                         href="#prev"
@@ -116,7 +129,10 @@ const Suppliers = () => {
                     </PaginationItem>
                     {page > 1 && (
                       <PaginationItem active>
-                        <PaginationLink href={`#page-${page}`} onClick={(e) => e.preventDefault()}>
+                        <PaginationLink
+                          href={`#page-${page}`}
+                          onClick={(e) => e.preventDefault()}
+                        >
                           {page}
                         </PaginationLink>
                       </PaginationItem>
