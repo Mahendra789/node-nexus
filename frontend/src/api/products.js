@@ -14,3 +14,9 @@ export const deleteProductById = (productId, options = {}) =>
 
 export const getProductStats = () =>
   apiRequest("/product/stats", { includeAuth: false });
+
+export const getSalesAndOrders = () =>
+  apiRequest("/product/sales-and-orders", {
+    includeAuth: false,
+    autoRedirectOnError: false,
+  });

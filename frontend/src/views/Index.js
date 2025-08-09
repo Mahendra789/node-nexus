@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 // node.js library that concatenates classes (strings)
 import classnames from "classnames";
 // javascipt plugin for creating charts
@@ -30,10 +30,15 @@ import {
 } from "variables/charts.js";
 
 import Header from "components/Headers/Header.js";
+import { getSalesAndOrders } from "api/products";
 
 const Index = (props) => {
   const [activeNav, setActiveNav] = useState(1);
   const [chartExample1Data, setChartExample1Data] = useState("data1");
+  const [isLoadingCharts, setIsLoadingCharts] = useState(false);
+  const [chartsError, setChartsError] = useState("");
+  const [salesChartData, setSalesChartData] = useState(null);
+  const [ordersChartData, setOrdersChartData] = useState(null);
 
   if (window.Chart) {
     parseOptions(Chart, chartOptions());
@@ -44,6 +49,81 @@ const Index = (props) => {
     setActiveNav(index);
     setChartExample1Data("data" + index);
   };
+
+  // Fixed labels: Jan to Jun
+  const janToJuneLabels = useMemo(
+    () => ["Jan", "Feb", "Mar", "Apr", "May", "Jun"],
+    []
+  );
+
+  // Fetch and map API response into chart datasets
+  useEffect(() => {
+    let isCancelled = false;
+
+    const mapResponseToCharts = (resp) => {
+      const labels = janToJuneLabels;
+      const sales = labels.map((m) => {
+        const val = resp && resp[m] ? resp[m].totalSales || 0 : 0;
+        return Math.round(val / 1000); // keep "k" scale used by chart options
+      });
+      const orders = labels.map((m) =>
+        resp && resp[m] ? resp[m].totalOrders || 0 : 0
+      );
+
+      const salesData = {
+        labels,
+        datasets: [
+          {
+            label: "Sales",
+            data: sales,
+          },
+        ],
+      };
+      const ordersData = {
+        labels,
+        datasets: [
+          {
+            label: "Orders",
+            data: orders,
+            maxBarThickness: 10,
+          },
+        ],
+      };
+      return { salesData, ordersData };
+    };
+
+    const fetchData = async () => {
+      setIsLoadingCharts(true);
+      setChartsError("");
+      try {
+        const resp = await getSalesAndOrders();
+        if (!isCancelled) {
+          const { salesData, ordersData } = mapResponseToCharts(resp || {});
+          setSalesChartData(salesData);
+          setOrdersChartData(ordersData);
+        }
+      } catch (err) {
+        if (!isCancelled) {
+          setChartsError(err?.message || "Failed to load charts");
+          // Provide zeroed charts to avoid empty UI
+          const { salesData, ordersData } = mapResponseToCharts({});
+          setSalesChartData(salesData);
+          setOrdersChartData(ordersData);
+        }
+      } finally {
+        if (!isCancelled) setIsLoadingCharts(false);
+      }
+    };
+
+    fetchData();
+
+    // Refresh periodically to reflect API changes
+    const intervalId = setInterval(fetchData, 60_000);
+    return () => {
+      isCancelled = true;
+      clearInterval(intervalId);
+    };
+  }, [janToJuneLabels]);
   return (
     <>
       <Header />
@@ -94,11 +174,24 @@ const Index = (props) => {
               <CardBody>
                 {/* Chart */}
                 <div className="chart">
-                  <Line
-                    data={chartExample1[chartExample1Data]}
-                    options={chartExample1.options}
-                    getDatasetAtEvent={(e) => console.log(e)}
-                  />
+                  {chartsError && (
+                    <div className="text-warning mb-2" style={{ fontSize: 12 }}>
+                      {chartsError}
+                    </div>
+                  )}
+                  {isLoadingCharts && !salesChartData ? (
+                    <div className="text-light">Loading sales data...</div>
+                  ) : (
+                    <Line
+                      data={
+                        activeNav === 1 && salesChartData
+                          ? salesChartData
+                          : chartExample1[chartExample1Data]
+                      }
+                      options={chartExample1.options}
+                      getDatasetAtEvent={(e) => console.log(e)}
+                    />
+                  )}
                 </div>
               </CardBody>
             </Card>
@@ -118,10 +211,14 @@ const Index = (props) => {
               <CardBody>
                 {/* Chart */}
                 <div className="chart">
-                  <Bar
-                    data={chartExample2.data}
-                    options={chartExample2.options}
-                  />
+                  {isLoadingCharts && !ordersChartData ? (
+                    <div>Loading orders data...</div>
+                  ) : (
+                    <Bar
+                      data={ordersChartData || chartExample2.data}
+                      options={chartExample2.options}
+                    />
+                  )}
                 </div>
               </CardBody>
             </Card>
@@ -133,7 +230,7 @@ const Index = (props) => {
               <CardHeader className="border-0">
                 <Row className="align-items-center">
                   <div className="col">
-                    <h3 className="mb-0">Page visits</h3>
+                    <h3 className="mb-0">Supplier Data</h3>
                   </div>
                   <div className="col text-right">
                     <Button
@@ -209,7 +306,7 @@ const Index = (props) => {
               <CardHeader className="border-0">
                 <Row className="align-items-center">
                   <div className="col">
-                    <h3 className="mb-0">Social traffic</h3>
+                    <h3 className="mb-0">Category Data</h3>
                   </div>
                   <div className="col text-right">
                     <Button

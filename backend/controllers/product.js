@@ -71,8 +71,8 @@ exports.stats = async (req, res, next) => {
 
 exports.salesAndOrders = async (req, res, next) => {
   try {
-    const sixMonthsAgo = new Date();
-    sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 5); // includes current month
+    const startDate = new Date("2025-01-01T00:00:00Z");
+    const endDate = new Date("2025-06-30T23:59:59Z");
 
     const data = await Product.aggregate([
       {
@@ -82,7 +82,7 @@ exports.salesAndOrders = async (req, res, next) => {
       },
       {
         $match: {
-          orderDate: { $gte: sixMonthsAgo },
+          orderDate: { $gte: startDate, $lte: endDate },
         },
       },
       {
@@ -128,9 +128,6 @@ exports.salesAndOrders = async (req, res, next) => {
           totalQuantity: 1,
           totalSales: 1,
         },
-      },
-      {
-        $sort: { "_id.month": 1 }, // correct month order
       },
     ]);
 
