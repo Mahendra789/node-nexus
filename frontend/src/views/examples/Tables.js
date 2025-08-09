@@ -35,6 +35,9 @@ const Tables = () => {
   const [errorMessage, setErrorMessage] = useState("");
   const [productToDelete, setProductToDelete] = useState(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [page, setPage] = useState(1);
+  const [limit] = useState(10);
+  const [hasNextPage, setHasNextPage] = useState(false);
   const [toast, setToast] = useState({
     visible: false,
     color: "success",
@@ -80,21 +83,38 @@ const Tables = () => {
   useEffect(() => {
     let isCancelled = false;
 
-    getAllProducts()
-      .then((data) => {
-        if (!isCancelled) setProducts(Array.isArray(data) ? data : []);
-      })
-      .catch((err) => {
-        if (!isCancelled)
+    const fetchPage = async () => {
+      setIsLoading(true);
+      setErrorMessage("");
+      try {
+        const data = await getAllProducts({ page, limit });
+        if (!isCancelled) {
+          const list = Array.isArray(data) ? data : [];
+          setProducts(list);
+          setHasNextPage(list.length === limit);
+        }
+      } catch (err) {
+        if (!isCancelled) {
           setErrorMessage(err?.message || "Failed to load products");
-      })
-      .finally(() => {
+          setProducts([]);
+          setHasNextPage(false);
+        }
+      } finally {
         if (!isCancelled) setIsLoading(false);
-      });
+      }
+    };
+
+    fetchPage();
     return () => {
       isCancelled = true;
     };
-  }, []);
+  }, [page, limit]);
+
+  const goToPage = (nextPage) => {
+    if (nextPage < 1) return;
+    if (nextPage === page) return;
+    setPage(nextPage);
+  };
 
   return (
     <>
@@ -172,9 +192,16 @@ const Tables = () => {
                                     cancelText: "Cancel",
                                   },
                                 });
-                                setProducts((prev) =>
-                                  prev.filter((p) => (p.id || p._id) !== id)
-                                );
+                                setProducts((prev) => {
+                                  const updated = prev.filter(
+                                    (p) => (p.id || p._id) !== id
+                                  );
+                                  // If page becomes empty and we are not on first page, go back a page
+                                  if (updated.length === 0 && page > 1) {
+                                    setPage((p) => Math.max(1, p - 1));
+                                  }
+                                  return updated;
+                                });
                                 setProductToDelete(null);
                               } catch (err) {
                                 if (err && err.__cancelled) {
@@ -257,44 +284,83 @@ const Tables = () => {
                     className="pagination justify-content-end mb-0"
                     listClassName="justify-content-end mb-0"
                   >
-                    <PaginationItem className="disabled">
+                    <PaginationItem disabled={page === 1}>
                       <PaginationLink
-                        href="#pablo"
-                        onClick={(e) => e.preventDefault()}
-                        tabIndex="-1"
+                        href="#prev"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          if (page > 1) goToPage(page - 1);
+                        }}
+                        tabIndex={page === 1 ? -1 : 0}
                       >
                         <i className="fas fa-angle-left" />
                         <span className="sr-only">Previous</span>
                       </PaginationLink>
                     </PaginationItem>
-                    <PaginationItem className="active">
+
+                    {/* First page */}
+                    <PaginationItem active={page === 1}>
                       <PaginationLink
-                        href="#pablo"
-                        onClick={(e) => e.preventDefault()}
+                        href="#page-1"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          goToPage(1);
+                        }}
                       >
                         1
                       </PaginationLink>
                     </PaginationItem>
-                    <PaginationItem>
+
+                    {/* Show previous page number if >= 2 (and not already 1) */}
+                    {page - 1 > 1 && (
+                      <PaginationItem>
+                        <PaginationLink
+                          href={`#page-${page - 1}`}
+                          onClick={(e) => {
+                            e.preventDefault();
+                            goToPage(page - 1);
+                          }}
+                        >
+                          {page - 1}
+                        </PaginationLink>
+                      </PaginationItem>
+                    )}
+
+                    {/* Current page (if not 1) */}
+                    {page > 1 && (
+                      <PaginationItem active>
+                        <PaginationLink
+                          href={`#page-${page}`}
+                          onClick={(e) => e.preventDefault()}
+                        >
+                          {page}
+                        </PaginationLink>
+                      </PaginationItem>
+                    )}
+
+                    {/* Next page number (only hint it if we likely have a next page) */}
+                    {hasNextPage && (
+                      <PaginationItem>
+                        <PaginationLink
+                          href={`#page-${page + 1}`}
+                          onClick={(e) => {
+                            e.preventDefault();
+                            goToPage(page + 1);
+                          }}
+                        >
+                          {page + 1}
+                        </PaginationLink>
+                      </PaginationItem>
+                    )}
+
+                    <PaginationItem disabled={!hasNextPage}>
                       <PaginationLink
-                        href="#pablo"
-                        onClick={(e) => e.preventDefault()}
-                      >
-                        2 <span className="sr-only">(current)</span>
-                      </PaginationLink>
-                    </PaginationItem>
-                    <PaginationItem>
-                      <PaginationLink
-                        href="#pablo"
-                        onClick={(e) => e.preventDefault()}
-                      >
-                        3
-                      </PaginationLink>
-                    </PaginationItem>
-                    <PaginationItem>
-                      <PaginationLink
-                        href="#pablo"
-                        onClick={(e) => e.preventDefault()}
+                        href="#next"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          if (hasNextPage) goToPage(page + 1);
+                        }}
+                        tabIndex={!hasNextPage ? -1 : 0}
                       >
                         <i className="fas fa-angle-right" />
                         <span className="sr-only">Next</span>

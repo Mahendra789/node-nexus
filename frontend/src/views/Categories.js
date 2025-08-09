@@ -1,12 +1,15 @@
 import { useEffect, useState } from "react";
 import Header from "components/Headers/Header.js";
 import { getAllCategories } from "api/products";
-import { Card, CardHeader, Container, Row, Table } from "reactstrap";
+import { Card, CardHeader, CardFooter, Container, Row, Table, Pagination, PaginationItem, PaginationLink } from "reactstrap";
 
 const Categories = () => {
   const [categories, setCategories] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+  const [page, setPage] = useState(1);
+  const [limit] = useState(10);
+  const [hasNext, setHasNext] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -14,11 +17,12 @@ const Categories = () => {
       setIsLoading(true);
       setError("");
       try {
-        const data = await getAllCategories();
-        const items = Array.isArray(data?.["Category data"])
-          ? data["Category data"]
-          : [];
-        if (!cancelled) setCategories(items);
+        const data = await getAllCategories({ page, limit });
+        const items = Array.isArray(data?.items) ? data.items : [];
+        if (!cancelled) {
+          setCategories(items);
+          setHasNext(!!data?.hasNext);
+        }
       } catch (e) {
         if (!cancelled) setError(e?.message || "Failed to load categories");
       } finally {
@@ -29,7 +33,13 @@ const Categories = () => {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [page, limit]);
+
+  const goToPage = (p) => {
+    if (p < 1) return;
+    if (p === page) return;
+    setPage(p);
+  };
 
   return (
     <>
@@ -76,6 +86,67 @@ const Categories = () => {
                   ))}
                 </tbody>
               </Table>
+              <CardFooter className="py-4">
+                <nav aria-label="Category pagination">
+                  <Pagination className="pagination justify-content-end mb-0" listClassName="justify-content-end mb-0">
+                    <PaginationItem disabled={page === 1}>
+                      <PaginationLink
+                        href="#prev"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          if (page > 1) goToPage(page - 1);
+                        }}
+                      >
+                        <i className="fas fa-angle-left" />
+                        <span className="sr-only">Previous</span>
+                      </PaginationLink>
+                    </PaginationItem>
+                    <PaginationItem active={page === 1}>
+                      <PaginationLink
+                        href="#page-1"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          goToPage(1);
+                        }}
+                      >
+                        1
+                      </PaginationLink>
+                    </PaginationItem>
+                    {page > 1 && (
+                      <PaginationItem active>
+                        <PaginationLink href={`#page-${page}`} onClick={(e) => e.preventDefault()}>
+                          {page}
+                        </PaginationLink>
+                      </PaginationItem>
+                    )}
+                    {hasNext && (
+                      <PaginationItem>
+                        <PaginationLink
+                          href={`#page-${page + 1}`}
+                          onClick={(e) => {
+                            e.preventDefault();
+                            goToPage(page + 1);
+                          }}
+                        >
+                          {page + 1}
+                        </PaginationLink>
+                      </PaginationItem>
+                    )}
+                    <PaginationItem disabled={!hasNext}>
+                      <PaginationLink
+                        href="#next"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          if (hasNext) goToPage(page + 1);
+                        }}
+                      >
+                        <i className="fas fa-angle-right" />
+                        <span className="sr-only">Next</span>
+                      </PaginationLink>
+                    </PaginationItem>
+                  </Pagination>
+                </nav>
+              </CardFooter>
             </Card>
           </div>
         </Row>

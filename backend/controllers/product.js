@@ -2,7 +2,15 @@ const Product = require("../models/product");
 
 exports.getProducts = async (req, res, next) => {
   try {
-    const products = await Product.find().lean();
+    const page = parseInt(req.query.page) || 1; // default: page 1
+    const limit = parseInt(req.query.limit) || 10; // default: 10 per page
+    const skip = (page - 1) * limit;
+
+    const total = await Product.countDocuments();
+
+    // Get paginated results
+    const products = await Product.find().skip(skip).limit(limit).lean();
+
     res.status(200).json(products);
   } catch (err) {
     next(err);
@@ -213,9 +221,15 @@ exports.suppliersAndCategories = async (req, res, next) => {
   }
 };
 
-// fetch all supplier data
+// fetch supplier data with pagination
 exports.suppliers = async (req, res, next) => {
   try {
+    const page = parseInt(req.query.page, 10) || 1;
+    const limit = parseInt(req.query.limit, 10) || 10;
+    const skip = (page - 1) * limit;
+
+    const total = await Product.distinct("supplier").then((arr) => arr.length);
+
     const suppliers = await Product.aggregate([
       {
         $group: {
@@ -225,6 +239,9 @@ exports.suppliers = async (req, res, next) => {
           Price: { $sum: "$total_price" },
         },
       },
+      { $sort: { _id: 1 } },
+      { $skip: skip },
+      { $limit: limit },
       {
         $project: {
           _id: 0,
@@ -236,15 +253,30 @@ exports.suppliers = async (req, res, next) => {
       },
     ]);
 
-    res.json(suppliers);
+    const totalPages = Math.max(1, Math.ceil(total / limit));
+    res.json({
+      items: suppliers,
+      page,
+      limit,
+      total,
+      totalPages,
+      hasNext: page * limit < total,
+      hasPrev: page > 1,
+    });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 };
 
-// fetch all category data
+// fetch category data with pagination
 exports.categories = async (req, res, next) => {
   try {
+    const page = parseInt(req.query.page, 10) || 1;
+    const limit = parseInt(req.query.limit, 10) || 10;
+    const skip = (page - 1) * limit;
+
+    const total = await Product.distinct("category").then((arr) => arr.length);
+
     const categories = await Product.aggregate([
       {
         $group: {
@@ -253,6 +285,9 @@ exports.categories = async (req, res, next) => {
           Price: { $sum: "$total_price" },
         },
       },
+      { $sort: { _id: 1 } },
+      { $skip: skip },
+      { $limit: limit },
       {
         $project: {
           _id: 0,
@@ -261,11 +296,17 @@ exports.categories = async (req, res, next) => {
           Price: { $round: ["$Price", 0] },
         },
       },
-      { $sort: { "Category name": 1 } }, // optional alphabetical sort
     ]);
 
+    const totalPages = Math.max(1, Math.ceil(total / limit));
     res.json({
-      "Category data": categories,
+      items: categories,
+      page,
+      limit,
+      total,
+      totalPages,
+      hasNext: page * limit < total,
+      hasPrev: page > 1,
     });
   } catch (err) {
     res.status(500).json({ error: err.message });
