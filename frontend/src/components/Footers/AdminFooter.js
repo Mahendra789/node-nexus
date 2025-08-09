@@ -9,14 +9,7 @@ const Footer = () => {
         <Col xl="12">
           <div className="copyright text-center text-xl-center text-muted">
             © {new Date().getFullYear()}{" "}
-            <a
-              className="font-weight-bold ml-1"
-              href="https://mahendra789.github.io"
-              rel="noopener noreferrer"
-              target="_blank"
-            >
-              Mahendra
-            </a>
+            <a className="font-weight-bold ml-1">Node Nexus</a>
           </div>
         </Col>
       </Row>

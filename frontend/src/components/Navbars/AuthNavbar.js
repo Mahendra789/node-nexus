@@ -18,10 +18,9 @@ const AdminNavbar = () => {
       <Navbar className="navbar-top navbar-horizontal navbar-dark" expand="md">
         <Container className="px-4">
           <NavbarBrand to="/admin/dashboard" tag={Link}>
-            <img
-              alt="..."
-              src={require("../../assets/img/brand/node-nexus-react-white.png")}
-            />
+            <span className="text-white font-weight-bold h3 mb-0">
+              Node Nexus
+            </span>
           </NavbarBrand>
           <button className="navbar-toggler" id="navbar-collapse-main">
             <span className="navbar-toggler-icon" />
@@ -30,11 +29,8 @@ const AdminNavbar = () => {
             <div className="navbar-collapse-header d-md-none">
               <Row>
                 <Col className="collapse-brand" xs="6">
-                  <Link to="/admin/dashboard">
-                    <img
-                      alt="..."
-                      src={require("../../assets/img/brand/node-nexus-react.png")}
-                    />
+                  <Link to="/admin/dashboard" className="text-white">
+                    <span className="font-weight-bold h3 mb-0">Node Nexus</span>
                   </Link>
                 </Col>
                 <Col className="collapse-close" xs="6">
