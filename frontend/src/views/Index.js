@@ -30,7 +30,7 @@ import {
 } from "variables/charts.js";
 
 import Header from "components/Headers/Header.js";
-import { getSalesAndOrders } from "api/products";
+import { getSalesAndOrders, getSuppliersAndCategories } from "api/products";
 
 const Index = (props) => {
   const [activeNav, setActiveNav] = useState(1);
@@ -39,6 +39,10 @@ const Index = (props) => {
   const [chartsError, setChartsError] = useState("");
   const [salesChartData, setSalesChartData] = useState(null);
   const [ordersChartData, setOrdersChartData] = useState(null);
+  const [suppliers, setSuppliers] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [isLoadingTables, setIsLoadingTables] = useState(false);
+  const [tablesError, setTablesError] = useState("");
 
   if (window.Chart) {
     parseOptions(Chart, chartOptions());
@@ -124,6 +128,37 @@ const Index = (props) => {
       clearInterval(intervalId);
     };
   }, [janToJuneLabels]);
+
+  // Fetch suppliers and categories for the tables
+  useEffect(() => {
+    let cancelled = false;
+    const fetchTables = async () => {
+      setIsLoadingTables(true);
+      setTablesError("");
+      try {
+        const resp = await getSuppliersAndCategories();
+        if (!cancelled) {
+          setSuppliers(
+            Array.isArray(resp?.["Supplier data"]) ? resp["Supplier data"] : []
+          );
+          setCategories(
+            Array.isArray(resp?.["Category data"]) ? resp["Category data"] : []
+          );
+        }
+      } catch (e) {
+        if (!cancelled)
+          setTablesError(e?.message || "Failed to load table data");
+      } finally {
+        if (!cancelled) setIsLoadingTables(false);
+      }
+    };
+    fetchTables();
+    const intervalId = setInterval(fetchTables, 60_000);
+    return () => {
+      cancelled = true;
+      clearInterval(intervalId);
+    };
+  }, []);
   return (
     <>
       <Header />
@@ -247,56 +282,35 @@ const Index = (props) => {
               <Table className="align-items-center table-flush" responsive>
                 <thead className="thead-light">
                   <tr>
-                    <th scope="col">Page name</th>
-                    <th scope="col">Visitors</th>
-                    <th scope="col">Unique users</th>
-                    <th scope="col">Bounce rate</th>
+                    <th scope="col">Name</th>
+                    <th scope="col">Quantity</th>
+                    <th scope="col">Unit</th>
+                    <th scope="col">Price</th>
                   </tr>
                 </thead>
                 <tbody>
-                  <tr>
-                    <th scope="row">/node-nexus/</th>
-                    <td>4,569</td>
-                    <td>340</td>
-                    <td>
-                      <i className="fas fa-arrow-up text-success mr-3" /> 46,53%
-                    </td>
-                  </tr>
-                  <tr>
-                    <th scope="row">/node-nexus/index.html</th>
-                    <td>3,985</td>
-                    <td>319</td>
-                    <td>
-                      <i className="fas fa-arrow-down text-warning mr-3" />{" "}
-                      46,53%
-                    </td>
-                  </tr>
-                  <tr>
-                    <th scope="row">/node-nexus/charts.html</th>
-                    <td>3,513</td>
-                    <td>294</td>
-                    <td>
-                      <i className="fas fa-arrow-down text-warning mr-3" />{" "}
-                      36,49%
-                    </td>
-                  </tr>
-                  <tr>
-                    <th scope="row">/node-nexus/tables.html</th>
-                    <td>2,050</td>
-                    <td>147</td>
-                    <td>
-                      <i className="fas fa-arrow-up text-success mr-3" /> 50,87%
-                    </td>
-                  </tr>
-                  <tr>
-                    <th scope="row">/node-nexus/profile.html</th>
-                    <td>1,795</td>
-                    <td>190</td>
-                    <td>
-                      <i className="fas fa-arrow-down text-danger mr-3" />{" "}
-                      46,53%
-                    </td>
-                  </tr>
+                  {tablesError && (
+                    <tr>
+                      <td colSpan={4} className="text-danger">
+                        {tablesError}
+                      </td>
+                    </tr>
+                  )}
+                  {isLoadingTables &&
+                    suppliers.length === 0 &&
+                    !tablesError && (
+                      <tr>
+                        <td colSpan={4}>Loading suppliers...</td>
+                      </tr>
+                    )}
+                  {suppliers.map((s, idx) => (
+                    <tr key={idx}>
+                      <th scope="row">{s?.Name ?? "-"}</th>
+                      <td>{s?.Quantity ?? 0}</td>
+                      <td>{s?.Unit ?? 0}</td>
+                      <td>{s?.Price ?? 0}</td>
+                    </tr>
+                  ))}
                 </tbody>
               </Table>
             </Card>
@@ -323,88 +337,33 @@ const Index = (props) => {
               <Table className="align-items-center table-flush" responsive>
                 <thead className="thead-light">
                   <tr>
-                    <th scope="col">Referral</th>
-                    <th scope="col">Visitors</th>
-                    <th scope="col" />
+                    <th scope="col">Category name</th>
+                    <th scope="col">Quantity</th>
+                    <th scope="col">Price</th>
                   </tr>
                 </thead>
                 <tbody>
-                  <tr>
-                    <th scope="row">Facebook</th>
-                    <td>1,480</td>
-                    <td>
-                      <div className="d-flex align-items-center">
-                        <span className="mr-2">60%</span>
-                        <div>
-                          <Progress
-                            max="100"
-                            value="60"
-                            barClassName="bg-gradient-danger"
-                          />
-                        </div>
-                      </div>
-                    </td>
-                  </tr>
-                  <tr>
-                    <th scope="row">Facebook</th>
-                    <td>5,480</td>
-                    <td>
-                      <div className="d-flex align-items-center">
-                        <span className="mr-2">70%</span>
-                        <div>
-                          <Progress
-                            max="100"
-                            value="70"
-                            barClassName="bg-gradient-success"
-                          />
-                        </div>
-                      </div>
-                    </td>
-                  </tr>
-                  <tr>
-                    <th scope="row">Google</th>
-                    <td>4,807</td>
-                    <td>
-                      <div className="d-flex align-items-center">
-                        <span className="mr-2">80%</span>
-                        <div>
-                          <Progress max="100" value="80" />
-                        </div>
-                      </div>
-                    </td>
-                  </tr>
-                  <tr>
-                    <th scope="row">Instagram</th>
-                    <td>3,678</td>
-                    <td>
-                      <div className="d-flex align-items-center">
-                        <span className="mr-2">75%</span>
-                        <div>
-                          <Progress
-                            max="100"
-                            value="75"
-                            barClassName="bg-gradient-info"
-                          />
-                        </div>
-                      </div>
-                    </td>
-                  </tr>
-                  <tr>
-                    <th scope="row">twitter</th>
-                    <td>2,645</td>
-                    <td>
-                      <div className="d-flex align-items-center">
-                        <span className="mr-2">30%</span>
-                        <div>
-                          <Progress
-                            max="100"
-                            value="30"
-                            barClassName="bg-gradient-warning"
-                          />
-                        </div>
-                      </div>
-                    </td>
-                  </tr>
+                  {tablesError && (
+                    <tr>
+                      <td colSpan={3} className="text-danger">
+                        {tablesError}
+                      </td>
+                    </tr>
+                  )}
+                  {isLoadingTables &&
+                    categories.length === 0 &&
+                    !tablesError && (
+                      <tr>
+                        <td colSpan={3}>Loading categories...</td>
+                      </tr>
+                    )}
+                  {categories.map((c, idx) => (
+                    <tr key={idx}>
+                      <th scope="row">{c?.["Category name"] ?? "-"}</th>
+                      <td>{c?.Quantity ?? 0}</td>
+                      <td>{c?.Price ?? 0}</td>
+                    </tr>
+                  ))}
                 </tbody>
               </Table>
             </Card>

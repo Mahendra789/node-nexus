@@ -20,3 +20,9 @@ export const getSalesAndOrders = () =>
     includeAuth: false,
     autoRedirectOnError: false,
   });
+
+export const getSuppliersAndCategories = () =>
+  apiRequest("/product/suppliers-and-categories", {
+    includeAuth: false,
+    autoRedirectOnError: false,
+  });
