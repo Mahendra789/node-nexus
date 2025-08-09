@@ -40,7 +40,7 @@ const Header = () => {
         ? new Intl.NumberFormat(undefined, {
             style: "currency",
             currency: "USD",
-            maximumFractionDigits: 2,
+            maximumFractionDigits: 0,
           }).format(value)
         : "—";
   }, []);

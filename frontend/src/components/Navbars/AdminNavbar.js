@@ -58,7 +58,7 @@ const AdminNavbar = (props) => {
         <Container fluid>
           <Link
             className="h4 mb-0 text-white text-uppercase d-none d-lg-inline-block"
-            to="/"
+            to="/admin/dashboard"
           >
             {props.brandText}
           </Link>

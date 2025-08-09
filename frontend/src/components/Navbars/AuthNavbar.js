@@ -17,7 +17,7 @@ const AdminNavbar = () => {
     <>
       <Navbar className="navbar-top navbar-horizontal navbar-dark" expand="md">
         <Container className="px-4">
-          <NavbarBrand to="/" tag={Link}>
+          <NavbarBrand to="/admin/dashboard" tag={Link}>
             <img
               alt="..."
               src={require("../../assets/img/brand/node-nexus-react-white.png")}
@@ -30,7 +30,7 @@ const AdminNavbar = () => {
             <div className="navbar-collapse-header d-md-none">
               <Row>
                 <Col className="collapse-brand" xs="6">
-                  <Link to="/">
+                  <Link to="/admin/dashboard">
                     <img
                       alt="..."
                       src={require("../../assets/img/brand/node-nexus-react.png")}
@@ -47,7 +47,11 @@ const AdminNavbar = () => {
             </div>
             <Nav className="ml-auto" navbar>
               <NavItem>
-                <NavLink className="nav-link-icon" to="/" tag={Link}>
+                <NavLink
+                  className="nav-link-icon"
+                  to="/admin/dashboard"
+                  tag={Link}
+                >
                   <i className="ni ni-planet" />
                   <span className="nav-link-inner--text">Dashboard</span>
                 </NavLink>

@@ -1,17 +1,24 @@
 import Index from "views/Index.js";
 import Profile from "views/examples/Profile.js";
-import Register from "views/examples/Register.js";
-import Login from "views/examples/Login.js";
 import Tables from "views/examples/Tables.js";
 import Suppliers from "views/Suppliers.js";
 import Categories from "views/Categories.js";
+import Login from "views/examples/Login";
+import Register from "views/examples/Register";
 
 var routes = [
   {
-    path: "/suppliers",
-    name: "Suppliers",
-    icon: "ni ni-archive-2 text-info",
-    component: <Suppliers />,
+    path: "/dashboard",
+    name: "Dashboard",
+    icon: "ni ni-tv-2 text-primary",
+    component: <Index />,
+    layout: "/admin",
+  },
+  {
+    path: "/tables",
+    name: "Products",
+    icon: "ni ni-bag-17 text-orange",
+    component: <Tables />,
     layout: "/admin",
   },
   {
@@ -22,10 +29,10 @@ var routes = [
     layout: "/admin",
   },
   {
-    path: "/dashboard",
-    name: "Dashboard",
-    icon: "ni ni-tv-2 text-primary",
-    component: <Index />,
+    path: "/suppliers",
+    name: "Supplier",
+    icon: "ni ni-archive-2 text-info",
+    component: <Suppliers />,
     layout: "/admin",
   },
   {
@@ -35,13 +42,7 @@ var routes = [
     component: <Profile />,
     layout: "/admin",
   },
-  {
-    path: "/tables",
-    name: "Tables",
-    icon: "ni ni-bullet-list-67 text-red",
-    component: <Tables />,
-    layout: "/admin",
-  },
+  // Auth routes
   {
     path: "/login",
     name: "Login",

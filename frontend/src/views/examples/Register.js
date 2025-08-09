@@ -197,6 +197,11 @@ const Register = () => {
             </Form>
           </CardBody>
         </Card>
+        <div className="mt-3 text-center">
+          <a className="text-light" href="/auth/login">
+            <small>Already have an account? Sign in</small>
+          </a>
+        </div>
       </Col>
     </>
   );

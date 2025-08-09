@@ -52,13 +52,23 @@ exports.stats = async (req, res, next) => {
     const totalOrders = await Product.countDocuments();
 
     const totalPrice = await Product.aggregate([
-      { $group: { _id: null, sum: { $sum: "$total_price" } } },
+      {
+        $group: {
+          _id: null,
+          sum: { $sum: "$total_price" },
+        },
+      },
+      {
+        $project: {
+          sum: { $round: ["$sum", 0] }, // removes decimals
+        },
+      },
     ]).then((result) => (result.length > 0 ? result[0].sum : 0));
 
     res.json({
-      total_product: totalProducts,
-      total_categories: totalCategories,
-      total_orders: totalOrders,
+      total_product: Math.round(totalProducts),
+      total_categories: Math.round(totalCategories),
+      total_orders: Math.round(totalOrders),
       total_sales: totalPrice,
     });
   } catch (err) {

@@ -14,7 +14,6 @@ import {
   NavItem,
   NavLink,
   Nav,
-  Progress,
   Table,
   Container,
   Row,
@@ -34,7 +33,7 @@ import { getSalesAndOrders, getSuppliersAndCategories } from "api/products";
 
 const Index = (props) => {
   const [activeNav, setActiveNav] = useState(1);
-  const [chartExample1Data, setChartExample1Data] = useState("data1");
+  const [setChartExample1Data] = useState("data1");
   const [isLoadingCharts, setIsLoadingCharts] = useState(false);
   const [chartsError, setChartsError] = useState("");
   const [salesChartData, setSalesChartData] = useState(null);
@@ -189,19 +188,6 @@ const Index = (props) => {
                           <span className="d-md-none">M</span>
                         </NavLink>
                       </NavItem>
-                      <NavItem>
-                        <NavLink
-                          className={classnames("py-2 px-3", {
-                            active: activeNav === 2,
-                          })}
-                          data-toggle="tab"
-                          href="#pablo"
-                          onClick={(e) => toggleNavs(e, 2)}
-                        >
-                          <span className="d-none d-md-block">Week</span>
-                          <span className="d-md-none">W</span>
-                        </NavLink>
-                      </NavItem>
                     </Nav>
                   </div>
                 </Row>
@@ -218,11 +204,7 @@ const Index = (props) => {
                     <div className="text-light">Loading sales data...</div>
                   ) : (
                     <Line
-                      data={
-                        activeNav === 1 && salesChartData
-                          ? salesChartData
-                          : chartExample1[chartExample1Data]
-                      }
+                      data={salesChartData || chartExample1["data1"]}
                       options={chartExample1.options}
                       getDatasetAtEvent={(e) => console.log(e)}
                     />

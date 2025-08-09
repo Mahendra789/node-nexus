@@ -6,15 +6,22 @@ const isAuth = require("../middleware/is-auth");
 
 const router = express.Router();
 
-router.get("/all", productController.getProducts);
-router.delete("/:productId", productController.deleteProduct);
-router.get("/stats", productController.stats);
-router.get("/sales-and-orders", productController.salesAndOrders);
+router.get("/all", isAuth, isAuth, productController.getProducts);
+router.delete("/:productId", isAuth, isAuth, productController.deleteProduct);
+router.get("/stats", isAuth, isAuth, productController.stats);
+router.get(
+  "/sales-and-orders",
+  isAuth,
+  isAuth,
+  productController.salesAndOrders
+);
 router.get(
   "/suppliers-and-categories",
+  isAuth,
+  isAuth,
   productController.suppliersAndCategories
 );
-router.get("/suppliers", productController.suppliers);
-router.get("/categories", productController.categories);
+router.get("/suppliers", isAuth, isAuth, productController.suppliers);
+router.get("/categories", isAuth, isAuth, productController.categories);
 
 module.exports = router;
