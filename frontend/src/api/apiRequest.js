@@ -1,5 +1,39 @@
 import { API_BASE_URL } from "../config";
 
+// Global notifier for API-level snackbars/toasts
+let apiNotifier = null;
+export const setApiNotifier = (fn) => {
+  apiNotifier = typeof fn === "function" ? fn : null;
+};
+
+const notify = (message, { color = "success", timeoutMs = 3000 } = {}) => {
+  try {
+    if (apiNotifier) apiNotifier({ message, color, timeoutMs });
+  } catch (_) {
+    /* noop */
+  }
+};
+
+// Global confirmer for API-level confirmation modals
+let apiConfirmer = null;
+export const setApiConfirmer = (fn) => {
+  apiConfirmer = typeof fn === "function" ? fn : null;
+};
+
+const confirmViaUI = async ({
+  message,
+  confirmText = "Delete",
+  cancelText = "Cancel",
+} = {}) => {
+  if (!apiConfirmer) return true;
+  try {
+    const result = await apiConfirmer({ message, confirmText, cancelText });
+    return !!result;
+  } catch (_) {
+    return false;
+  }
+};
+
 const getAuthToken = () => {
   try {
     return window.localStorage.getItem("authToken");
@@ -16,6 +50,13 @@ export const apiRequest = async (
     includeAuth = true,
     headers = {},
     autoRedirectOnError = true,
+    // Snackbar options
+    successToastMessage,
+    successToastColor = "success",
+    errorToast = true,
+    // Confirmation dialog options
+    confirmDialog,
+    treatCancelAsError = false,
   } = {}
 ) => {
   if (!API_BASE_URL) {
@@ -30,6 +71,19 @@ export const apiRequest = async (
   if (includeAuth) {
     const token = getAuthToken();
     if (token) finalHeaders["Authorization"] = `Bearer ${token}`;
+  }
+
+  // If a confirmation is requested, resolve it first
+  if (confirmDialog) {
+    const allowed = await confirmViaUI(confirmDialog);
+    if (!allowed) {
+      const cancelError = new Error("Request cancelled by user");
+      // mark as cancelled; callers can ignore
+      cancelError.__cancelled = true;
+      if (treatCancelAsError && errorToast)
+        notify("Action cancelled", { color: "warning" });
+      throw cancelError;
+    }
   }
 
   const response = await fetch(`${API_BASE_URL}${path}`, {
@@ -68,12 +122,20 @@ export const apiRequest = async (
         /* ignore */
       }
     }
+    if (errorToast) notify(message, { color: "danger" });
     throw new Error(message);
   }
 
   try {
-    return await response.json();
+    const data = await response.json();
+    if (successToastMessage) {
+      notify(successToastMessage, { color: successToastColor });
+    }
+    return data;
   } catch (_) {
+    if (successToastMessage) {
+      notify(successToastMessage, { color: successToastColor });
+    }
     return {};
   }
 };

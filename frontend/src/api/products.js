@@ -1,1 +1,1 @@
-export { getAllProducts } from "./product";
+export { getAllProducts, deleteProductById } from "./product";

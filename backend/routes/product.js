@@ -7,5 +7,6 @@ const isAuth = require("../middleware/is-auth");
 const router = express.Router();
 
 router.get("/all", productController.getProducts);
+router.delete("/:productId", productController.deleteProduct);
 
 module.exports = router;

@@ -1,6 +1,6 @@
 // reactstrap components
-import { useEffect, useState } from "react";
-import { getAllProducts } from "../../api/products";
+import { useEffect, useRef, useState } from "react";
+import { getAllProducts, deleteProductById } from "../../api/products";
 import {
   Badge,
   Card,
@@ -19,14 +19,63 @@ import {
   Container,
   Row,
   UncontrolledTooltip,
+  Button,
+  Alert,
+  Modal,
+  ModalBody,
+  ModalFooter,
 } from "reactstrap";
 // core components
 import Header from "components/Headers/Header.js";
+import { setApiNotifier, setApiConfirmer } from "../../api/apiRequest";
 
 const Tables = () => {
   const [products, setProducts] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
+  const [productToDelete, setProductToDelete] = useState(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [toast, setToast] = useState({
+    visible: false,
+    color: "success",
+    message: "",
+  });
+  const toastTimerRef = useRef(null);
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+  const [confirmState, setConfirmState] = useState({
+    message: "Are you sure?",
+    confirmText: "Delete",
+    cancelText: "Cancel",
+  });
+  const confirmResolveRef = useRef(null);
+
+  useEffect(() => {
+    setApiNotifier(({ message, color = "success", timeoutMs = 3000 }) => {
+      setToast({ visible: true, color, message });
+      if (toastTimerRef.current) window.clearTimeout(toastTimerRef.current);
+      toastTimerRef.current = window.setTimeout(() => {
+        setToast((prev) => ({ ...prev, visible: false }));
+      }, timeoutMs);
+    });
+    setApiConfirmer(
+      ({ message, confirmText = "Delete", cancelText = "Cancel" }) => {
+        return new Promise((resolve) => {
+          confirmResolveRef.current = resolve;
+          setConfirmState({
+            message: message || "Are you sure?",
+            confirmText,
+            cancelText,
+          });
+          setIsConfirmOpen(true);
+        });
+      }
+    );
+    return () => {
+      setApiNotifier(null);
+      setApiConfirmer(null);
+      if (toastTimerRef.current) window.clearTimeout(toastTimerRef.current);
+    };
+  }, []);
 
   useEffect(() => {
     let isCancelled = false;
@@ -71,7 +120,7 @@ const Tables = () => {
                     <th scope="col">Supplier</th>
                     <th scope="col">Customer Name</th>
                     <th scope="col">Customer Email</th>
-                    <th scope="col" />
+                    <th scope="col">Action</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -105,11 +154,103 @@ const Tables = () => {
                         <td>{product.supplier}</td>
                         <td>{product.customer_name}</td>
                         <td>{product.customer_email}</td>
-                        <td></td>
+                        <td>
+                          <Button
+                            color="danger"
+                            size="sm"
+                            onClick={async () => {
+                              if (isDeleting) return;
+                              const id = product.id || product._id;
+                              setProductToDelete(product);
+                              setIsDeleting(true);
+                              try {
+                                await deleteProductById(id, {
+                                  confirmDialog: {
+                                    message:
+                                      "Are you sure you want to delete this item?",
+                                    confirmText: "Delete",
+                                    cancelText: "Cancel",
+                                  },
+                                });
+                                setProducts((prev) =>
+                                  prev.filter((p) => (p.id || p._id) !== id)
+                                );
+                                setProductToDelete(null);
+                              } catch (err) {
+                                if (err && err.__cancelled) {
+                                  // silently ignore
+                                }
+                              } finally {
+                                setIsDeleting(false);
+                              }
+                            }}
+                          >
+                            <i className="fas fa-trash" aria-hidden="true" />
+                          </Button>
+                        </td>
                       </tr>
                     ))}
                 </tbody>
               </Table>
+              {/* Snackbar / Toast */}
+              <div
+                style={{
+                  position: "fixed",
+                  top: "1rem",
+                  right: "1rem",
+                  zIndex: 1080,
+                  minWidth: "280px",
+                  maxWidth: "90vw",
+                }}
+              >
+                <Alert
+                  color={toast.color}
+                  isOpen={toast.visible}
+                  toggle={() =>
+                    setToast((prev) => ({ ...prev, visible: false }))
+                  }
+                  fade
+                  className="shadow"
+                >
+                  {toast.message}
+                </Alert>
+              </div>
+              {/* Global Confirmation Modal controlled via API layer */}
+              <Modal
+                isOpen={isConfirmOpen}
+                toggle={() => {
+                  if (!isConfirmOpen) return;
+                  if (confirmResolveRef.current)
+                    confirmResolveRef.current(false);
+                  setIsConfirmOpen(false);
+                }}
+                backdrop
+              >
+                <ModalBody>{confirmState.message}</ModalBody>
+                <ModalFooter>
+                  <Button
+                    color="danger"
+                    onClick={() => {
+                      if (confirmResolveRef.current)
+                        confirmResolveRef.current(true);
+                      setIsConfirmOpen(false);
+                    }}
+                  >
+                    {confirmState.confirmText || "Delete"}
+                  </Button>
+                  <Button
+                    color="secondary"
+                    onClick={() => {
+                      if (confirmResolveRef.current)
+                        confirmResolveRef.current(false);
+                      setIsConfirmOpen(false);
+                    }}
+                  >
+                    {confirmState.cancelText || "Cancel"}
+                  </Button>
+                </ModalFooter>
+              </Modal>
+              {/* Deletion handler uses global confirmer via apiRequest */}
               <CardFooter className="py-4">
                 <nav aria-label="...">
                   <Pagination
