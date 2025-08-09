@@ -19,6 +19,15 @@ const Admin = (props) => {
     mainContent.current.scrollTop = 0;
   }, [location]);
 
+  React.useEffect(() => {
+    const pageTitle = getBrandText(location.pathname);
+    if (pageTitle) {
+      document.title = `Node Nexus - ${pageTitle}`;
+    } else {
+      document.title = "Node Nexus";
+    }
+  }, [location]);
+
   const getRoutes = (routes) => {
     return routes.map((prop, key) => {
       if (prop.layout === "/admin") {

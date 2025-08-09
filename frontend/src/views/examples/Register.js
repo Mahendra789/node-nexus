@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { createUser } from "../../api/user";
+import { useTimedAlert } from "components/Common/useTimedAlert";
 // reactstrap components
 import {
   Button,
@@ -26,19 +27,9 @@ const Register = () => {
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [alertState, setAlertState] = useState({
-    visible: false,
-    color: "",
-    message: "",
-  });
+  const { alertState, setAlert, setAlertState } = useTimedAlert();
 
-  const setAlert = (message, color) => {
-    setAlertState({ visible: true, color, message });
-    setTimeout(
-      () => setAlertState((prev) => ({ ...prev, visible: false })),
-      3000
-    );
-  };
+  // alert handling moved to useTimedAlert hook
 
   const handleChange = (field) => (e) =>
     setForm((prev) => ({ ...prev, [field]: e.target.value }));
