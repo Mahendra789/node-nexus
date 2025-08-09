@@ -24,10 +24,19 @@ app.use((req, res, next) => {
 });
 // Support both legacy and new signup endpoints
 
+// Basic health/root endpoints for platform health checks
+app.get("/", (req, res) => {
+  res.status(200).send("OK");
+});
+
+app.get("/health", (req, res) => {
+  res.status(200).json({ status: "ok" });
+});
+
 app.use("/auth", authRoutes);
 app.use("/product", productRoutes);
 
 const PORT = process.env.PORT || 8080;
-app.listen(PORT, () => {
+app.listen(PORT, "0.0.0.0", () => {
   console.log(`Server running on port ${PORT}`);
 });
