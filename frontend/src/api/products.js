@@ -11,3 +11,6 @@ export const deleteProductById = (productId, options = {}) =>
     successToastMessage: "Product deleted successfully!",
     ...options,
   });
+
+export const getProductStats = () =>
+  apiRequest("/product/stats", { includeAuth: false });

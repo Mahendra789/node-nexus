@@ -1,7 +1,49 @@
 // reactstrap components
+import { useEffect, useState, useMemo } from "react";
+import { getProductStats } from "../../api/products";
 import { Card, CardBody, CardTitle, Container, Row, Col } from "reactstrap";
 
 const Header = () => {
+  const [stats, setStats] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    let isMounted = true;
+    (async () => {
+      try {
+        const data = await getProductStats();
+        if (isMounted) setStats(data);
+      } catch (err) {
+        if (isMounted) setError(err?.message || "Failed to load stats");
+      } finally {
+        if (isMounted) setLoading(false);
+      }
+    })();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const formatNumber = useMemo(() => {
+    return (value) =>
+      typeof value === "number"
+        ? new Intl.NumberFormat(undefined, { maximumFractionDigits: 0 }).format(
+            value
+          )
+        : "—";
+  }, []);
+
+  const formatCurrency = useMemo(() => {
+    return (value) =>
+      typeof value === "number"
+        ? new Intl.NumberFormat(undefined, {
+            style: "currency",
+            currency: "USD",
+            maximumFractionDigits: 2,
+          }).format(value)
+        : "—";
+  }, []);
   return (
     <>
       <div className="header bg-gradient-info pb-8 pt-5 pt-md-8">
@@ -21,7 +63,7 @@ const Header = () => {
                           Products
                         </CardTitle>
                         <span className="h2 font-weight-bold mb-0">
-                          350,897
+                          {loading ? "—" : formatNumber(stats?.total_product)}
                         </span>
                       </div>
                       <Col className="col-auto">
@@ -50,7 +92,11 @@ const Header = () => {
                         >
                           Categories
                         </CardTitle>
-                        <span className="h2 font-weight-bold mb-0">2,356</span>
+                        <span className="h2 font-weight-bold mb-0">
+                          {loading
+                            ? "—"
+                            : formatNumber(stats?.total_categories)}
+                        </span>
                       </div>
                       <Col className="col-auto">
                         <div className="icon icon-shape bg-warning text-white rounded-circle shadow">
@@ -76,9 +122,11 @@ const Header = () => {
                           tag="h5"
                           className="text-uppercase text-muted mb-0"
                         >
-                          Customers
+                          Orders
                         </CardTitle>
-                        <span className="h2 font-weight-bold mb-0">924</span>
+                        <span className="h2 font-weight-bold mb-0">
+                          {loading ? "—" : formatNumber(stats?.total_orders)}
+                        </span>
                       </div>
                       <Col className="col-auto">
                         <div className="icon icon-shape bg-yellow text-white rounded-circle shadow">
@@ -104,9 +152,11 @@ const Header = () => {
                           tag="h5"
                           className="text-uppercase text-muted mb-0"
                         >
-                          Seles
+                          Sales
                         </CardTitle>
-                        <span className="h2 font-weight-bold mb-0">49,65%</span>
+                        <span className="h2 font-weight-bold mb-0">
+                          {loading ? "—" : formatCurrency(stats?.total_sales)}
+                        </span>
                       </div>
                       <Col className="col-auto">
                         <div className="icon icon-shape bg-info text-white rounded-circle shadow">
