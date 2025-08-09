@@ -26,3 +26,15 @@ export const getSuppliersAndCategories = () =>
     includeAuth: false,
     autoRedirectOnError: false,
   });
+
+export const getAllSuppliers = () =>
+  apiRequest("/product/suppliers", {
+    includeAuth: false,
+    autoRedirectOnError: false,
+  });
+
+export const getAllCategories = () =>
+  apiRequest("/product/categories", {
+    includeAuth: false,
+    autoRedirectOnError: false,
+  });

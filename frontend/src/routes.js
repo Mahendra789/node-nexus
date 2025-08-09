@@ -3,8 +3,24 @@ import Profile from "views/examples/Profile.js";
 import Register from "views/examples/Register.js";
 import Login from "views/examples/Login.js";
 import Tables from "views/examples/Tables.js";
+import Suppliers from "views/Suppliers.js";
+import Categories from "views/Categories.js";
 
 var routes = [
+  {
+    path: "/suppliers",
+    name: "Suppliers",
+    icon: "ni ni-archive-2 text-info",
+    component: <Suppliers />,
+    layout: "/admin",
+  },
+  {
+    path: "/categories",
+    name: "Categories",
+    icon: "ni ni-tag text-success",
+    component: <Categories />,
+    layout: "/admin",
+  },
   {
     path: "/dashboard",
     name: "Dashboard",

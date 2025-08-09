@@ -270,8 +270,11 @@ const Index = (props) => {
                   <div className="col text-right">
                     <Button
                       color="primary"
-                      href="#pablo"
-                      onClick={(e) => e.preventDefault()}
+                      onClick={() => {
+                        try {
+                          window.location.assign("/admin/suppliers");
+                        } catch (_) {}
+                      }}
                       size="sm"
                     >
                       See all
@@ -325,8 +328,11 @@ const Index = (props) => {
                   <div className="col text-right">
                     <Button
                       color="primary"
-                      href="#pablo"
-                      onClick={(e) => e.preventDefault()}
+                      onClick={() => {
+                        try {
+                          window.location.assign("/admin/categories");
+                        } catch (_) {}
+                      }}
                       size="sm"
                     >
                       See all
